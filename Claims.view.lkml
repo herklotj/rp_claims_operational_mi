@@ -4,10 +4,13 @@ view: claims {
 
 select
     to_timestamp(exp.acc_week) as acc_week
+    ,date_part('week',exp.acc_week) as acc_week_number
+    ,date_part('year',exp.acc_week) as acc_year
     ,earned_premium
     ,exposure
     ,in_force
     ,total_reported_exc_ws_inwk
+    ,clm.*
 from
 
    (select
@@ -64,6 +67,16 @@ dimension_group: accident_week {
   sql: ${TABLE}.acc_week ;;
   }
 
+dimension: accident_week_number {
+  type: number
+  sql: ${TABLE}.acc_week_number ;;
+}
+
+  dimension: accident_year {
+    type: number
+    sql: ${TABLE}.acc_year ;;
+  }
+
 measure: exposure {
     type: sum
     sql: exposure;;
@@ -74,9 +87,20 @@ measure: reported_clms_inwk {
     sql: total_reported_exc_ws_inwk;;
   }
 
+measure: fault_clms_inwk {
+    type: sum
+    sql: total_count_exc_ws_inwk;;
+  }
+
   measure: reported_clms_inwk_freq {
     type: number
     sql: ${reported_clms_inwk} / nullif(${exposure},0);;
     value_format: "0.0%"
   }
+  measure: fault_clms_inwk_freq {
+    type: number
+    sql: ${fault_clms_inwk} / nullif(${exposure},0);;
+    value_format: "0.0%"
+  }
+
 }

@@ -11,3 +11,4 @@ datagroup: claims_datagroup {
 persist_with: claims_datagroup
 
 explore: claims {}
+explore: fnol {}
