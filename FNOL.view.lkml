@@ -6,7 +6,6 @@ view: fnol {
   from
     (
     SELECT
-           /*concat(year(notificationdate),'-',week(notificationdate)) as notification_week*/
           wk.start_date as notification_week
            ,ROW_NUMBER() OVER (PARTITION BY claimnum ORDER BY claimnum,effectivedate) AS trncount
            ,case when (total_inc_exc_rec - ws_inc_exc_rec) > 0 then 1 else 0 end as reported_clm
@@ -74,9 +73,17 @@ measure: proportion_with_ad_only {
   sql: sum(ad_non_nil_tp_nil)/${reported_claims} ;;
 }
 
+measure: tp_only_claims {
+  type:  sum
+  sql:  tp_non_nil_ad_nil;;
+
+}
+
 measure: proportion_with_tp_only {
   type: number
-  sql: sum(tp_non_nil_tp_nil)/${reported_claims} ;;
+  sql: ${tp_only_claims}/${reported_claims}
+  value_format: "0.0%"
+  ;;
 }
 
 
