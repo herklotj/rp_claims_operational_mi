@@ -13,3 +13,4 @@ persist_with: claims_datagroup
 explore: claims {}
 explore: fnol {}
 explore: fnol_ice {}
+explore: ice_claims {}
