@@ -7,11 +7,13 @@ view: fnol_ice {
         (
         SELECT
               wk.start_date as notification_week
-               ,case when (total_incurred_exc_rec - ws_incurred) > 0 then 1.00 else 0.00 end as reported_clm
+               ,case when ws_incurred > 0 then 0.00 else 1.00 end as reported_clm
+               ,case when (total_incurred - ws_incurred) > 0.00 then 1.00 else 0.00 end as non_nil_clm
                ,case when (total_incurred - ws_incurred) > 0.00 then 1.00 else 0.00 end as non_nil_clm
                ,case when (total_incurred - ws_incurred) <= 0.00 and ws_incurred = 0.00 then 1.00 else 0.00 end as nil_clm
                ,case when (tp_incurred) > 0.00 then 1.00 else 0.00 end as tp_non_nil_clm
                ,case when (ad_incurred) > 0.00 then 1.00 else 0.00 end as ad_non_nil_clm
+               ,case when (pi_incurred) > 0.00 then 1.00 else 0.00 end as pi_non_nil_clm
                ,case when (ad_incurred) > 0.00 and (tp_incurred) > 0.00 then 1.00 else 0.00 end as ad_tp_non_nil
                ,case when (ad_incurred) > 0.00 and (tp_incurred) = 0.00 then 1.00 else 0.00 end as ad_non_nil_tp_nil
                ,case when (ad_incurred) = 0.00 and (tp_incurred) > 0.00 then 1.00 else 0.00 end as tp_non_nil_ad_nil
@@ -136,4 +138,52 @@ view: fnol_ice {
         value_format: "0%"
   }
 
+    measure: average_initial_incurred_ice {
+      type: number
+      sql: sum(case when notificationdate >= '2019-09-30' then (total_incurred - ws_incurred) else 0 end) / nullif(sum(case when notificationdate >= '2019-09-30' then non_nil_clm else 0 end),0);;
+      value_format_name: "gbp"
+  }
+
+  measure: average_initial_incurred_aapache {
+    type: number
+    sql: sum(case when notificationdate < '2019-09-30' then (total_incurred - ws_incurred) else 0 end) / nullif(sum(case when notificationdate < '2019-09-30' then non_nil_clm else 0 end),0);;
+    value_format_name: "gbp"
+  }
+
+  measure: average_initial_ad_ice {
+    type: number
+    sql: sum(case when notificationdate >= '2019-09-30' then ad_incurred else 0 end) / nullif(sum(case when notificationdate >= '2019-09-30' then ad_non_nil_clm else 0 end),0);;
+    value_format_name: "gbp"
+  }
+
+  measure: average_initial_ad_aapache {
+    type: number
+    sql: sum(case when notificationdate < '2019-09-30' then ad_incurred else 0 end) / nullif(sum(case when notificationdate < '2019-09-30' then ad_non_nil_clm else 0 end),0);;
+    value_format_name: "gbp"
+  }
+
+  measure: average_initial_tp_ice {
+    type: number
+    sql: sum(case when notificationdate >= '2019-09-30' then tp_incurred else 0 end) / nullif(sum(case when notificationdate >= '2019-09-30' then tp_non_nil_clm else 0 end),0);;
+    value_format_name: "gbp"
+  }
+
+  measure: average_initial_tp_aapache {
+    type: number
+    sql: sum(case when notificationdate < '2019-09-30' then tp_incurred else 0 end) / nullif(sum(case when notificationdate < '2019-09-30' then tp_non_nil_clm else 0 end),0);;
+    value_format_name: "gbp"
+  }
+  measure: average_initial_pi_ice {
+    type: number
+    sql: sum(case when notificationdate >= '2019-09-30' then pi_incurred else 0 end) / nullif(sum(case when notificationdate >= '2019-09-30' then pi_non_nil_clm else 0 end),0);;
+    value_format_name: "gbp"
+  }
+
+  measure: average_initial_pi_aapache {
+    type: number
+    sql: sum(case when notificationdate < '2019-09-30' then pi_incurred else 0 end) / nullif(sum(case when notificationdate < '2019-09-30' then pi_non_nil_clm else 0 end),0);;
+    value_format_name: "gbp"
+  }
+
     }
+
