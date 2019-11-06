@@ -7,10 +7,10 @@ view: nonfault_ad_claims {
         ,l.incidentdate
         ,l.notificationdate
         ,s.status_code
-        ,l.ad_paid,
-        ,l.ad_paid_fees
+        ,l.ad_paid
+        ,l.ad_fees_paid
         ,l.ad_incurred
-        ,l.ad_incurred_fees
+        ,l.ad_incurred
         ,l.total_incurred
     FROM v_ice_claims_latest_position l
     INNER JOIN  (SELECT claim_number
@@ -29,11 +29,12 @@ view: nonfault_ad_claims {
 
 
    dimension: claim_number {
+     primary_key: yes
      type: string
      sql: ${TABLE}.claimnum ;;
    }
 
-   measure: ad_incurred {
+   dimension: ad_incurred {
      description: "Total AD Incurred including fees"
      type: number
      sql: ${TABLE}.ad_incurred ;;
