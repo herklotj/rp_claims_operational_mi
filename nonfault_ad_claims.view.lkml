@@ -10,7 +10,7 @@ view: nonfault_ad_claims {
         ,l.ad_paid
         ,l.ad_fees_paid
         ,l.ad_incurred
-        ,l.ad_incurred
+        ,l.ad_fees_incurred
         ,l.total_incurred
     FROM v_ice_claims_latest_position l
     INNER JOIN  (SELECT claim_number
@@ -34,10 +34,39 @@ view: nonfault_ad_claims {
      sql: ${TABLE}.claimnum ;;
    }
 
-   dimension: ad_incurred {
-     description: "Total AD Incurred including fees"
+   dimension: ad_paid {
+     description: "AD Paid including fees"
      type: number
-     sql: ${TABLE}.ad_incurred ;;
+     value_format_name: gbp
+     sql: ${TABLE}.ad_paid ;;
    }
+
+  dimension: ad_fees_paid {
+    description: "AD Paid Fees"
+    type: number
+    value_format_name: gbp
+    sql: ${TABLE}.ad_fees_paid ;;
+  }
+
+  dimension: ad_incurred {
+    description: "AD Incurred including fees"
+    type: number
+    value_format_name: gbp
+    sql: ${TABLE}.ad_incurred ;;
+  }
+
+  dimension: ad_fees_incurred {
+    description: "AD Incurred Fees"
+    type: number
+    value_format_name: gbp
+    sql: ${TABLE}.ad_fees_incurred ;;
+  }
+
+  dimension: total_incurred {
+    description: "Total Incurred Fees"
+    type: number
+    value_format_name: gbp
+    sql: ${TABLE}.total_incurred ;;
+  }
 
  }
