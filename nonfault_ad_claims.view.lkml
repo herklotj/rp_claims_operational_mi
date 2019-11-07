@@ -77,10 +77,10 @@ view: nonfault_ad_claims {
   dimension: accident_month {
     description: "Accident Month"
     allow_fill: no
-    type: date_month
-    sql:case when year(${TABLE}.incidentdate) = year(sysdate) and month(sysdate) - month(${TABLE}.incidentdate) <6 then ${TABLE}.incidentdate
+    type: date
+    sql:date_trunc('month',case when year(${TABLE}.incidentdate) = year(sysdate) and month(sysdate) - month(${TABLE}.incidentdate) <6 then ${TABLE}.incidentdate
              when year(sysdate) - year(${TABLE}.incidentdate) = 1 and month(sysdate) +12 - month(${TABLE}.incidentdate) <6 then ${TABLE}.incidentdate
-             else date_trunc('year',${TABLE}.incidentdate) end ;;
+             else date_trunc('year',${TABLE}.incidentdate) end) ;;
   }
 
   measure: number {
