@@ -29,19 +29,22 @@ view: nonfault_ad_claims {
 
 
    dimension: claim_number {
-     primary_key: yes
-     type: string
-     sql: ${TABLE}.claimnum ;;
+    label: "Claim Number"
+    primary_key: yes
+    type: string
+    sql: ${TABLE}.claimnum ;;
    }
 
-   dimension: ad_paid {
-     description: "AD Paid including fees"
-     type: number
-     value_format_name: gbp
-     sql: ${TABLE}.ad_paid ;;
+  dimension: ad_paid {
+    label: "AD Paid"
+    description: "AD Paid including fees"
+    type: number
+    value_format_name: gbp
+    sql: ${TABLE}.ad_paid ;;
    }
 
   dimension: ad_fees_paid {
+    label: "AD Fees Paid"
     description: "AD Paid Fees"
     type: number
     value_format_name: gbp
@@ -49,6 +52,7 @@ view: nonfault_ad_claims {
   }
 
   dimension: ad_incurred {
+    label: "AD Incurred"
     description: "AD Incurred including fees"
     type: number
     value_format_name: gbp
@@ -56,6 +60,7 @@ view: nonfault_ad_claims {
   }
 
   dimension: ad_fees_incurred {
+    label: "AD Fees Incurred"
     description: "AD Incurred Fees"
     type: number
     value_format_name: gbp
@@ -67,6 +72,29 @@ view: nonfault_ad_claims {
     type: number
     value_format_name: gbp
     sql: ${TABLE}.total_incurred ;;
+  }
+
+  dimension: accident_month {
+    description: "Accident Month"
+    allow_fill: no
+    type: date_month
+    sql:case when year(${TABLE}.incidentdate) = year(sysdate) and month(sysdate) - month(${TABLE}.incidentdate) <6 then ${TABLE}.incidentdate
+             when year(sysdate) - year(${TABLE}.incidentdate) = 1 and month(sysdate) +12 - month(${TABLE}.incidentdate) <6 then ${TABLE}.incidentdate
+             else date_trunc('year',${TABLE}.incidentdate) end ;;
+  }
+
+  measure: number {
+    type: count
+  }
+
+  measure: positive {
+    type: sum
+    sql:  case when ${TABLE}.ad_incurred > 0 then 1 else 0 end;;
+  }
+
+  measure: negative {
+    type: sum
+    sql:  case when ${TABLE}.ad_incurred < 0 then 1 else 0 end;;
   }
 
  }
