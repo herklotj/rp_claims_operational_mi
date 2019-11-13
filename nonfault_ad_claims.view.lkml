@@ -94,6 +94,7 @@ view: nonfault_ad_claims {
 
   measure: positive_incurred {
     type: sum
+    value_format_name: gbp
     sql:  case when ${TABLE}.ad_incurred > 0 then ${TABLE}.ad_incurred else 0 end;;
   }
 
@@ -104,6 +105,7 @@ view: nonfault_ad_claims {
 
   measure: negative_incurred {
     type: sum
+    value_format_name: gbp
     sql:  case when ${TABLE}.ad_incurred < 0 then ${TABLE}.ad_incurred else 0 end;;
   }
 
