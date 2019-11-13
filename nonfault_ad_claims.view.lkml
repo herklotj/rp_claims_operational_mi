@@ -92,9 +92,19 @@ view: nonfault_ad_claims {
     sql:  case when ${TABLE}.ad_incurred > 0 then 1 else 0 end;;
   }
 
+  measure: positive_incurred {
+    type: sum
+    sql:  case when ${TABLE}.ad_incurred > 0 then ${TABLE}.ad_incurred else 0 end;;
+  }
+
   measure: negative {
     type: sum
     sql:  case when ${TABLE}.ad_incurred < 0 then 1 else 0 end;;
+  }
+
+  measure: negative_incurred {
+    type: sum
+    sql:  case when ${TABLE}.ad_incurred < 0 then ${TABLE}.ad_incurred else 0 end;;
   }
 
  }
