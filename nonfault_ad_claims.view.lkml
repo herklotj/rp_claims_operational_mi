@@ -109,4 +109,10 @@ view: nonfault_ad_claims {
     sql:  case when ${TABLE}.ad_incurred < 0 then ${TABLE}.ad_incurred else 0 end;;
   }
 
+  measure: incurred {
+    type: sum
+    value_format_name: gbp
+    sql:  ${TABLE}.ad_incurred;;
+  }
+
  }
