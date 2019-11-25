@@ -131,7 +131,6 @@ view: nonfault_ad_claims {
 
   measure: pi_count {
     type: sum
-    value_format_name: gbp
     sql:  case when ${TABLE}.pi_incurred > 0 then 1 else 0 end;;
   }
 
