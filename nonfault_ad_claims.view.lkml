@@ -12,6 +12,8 @@ view: nonfault_ad_claims {
         ,l.ad_incurred
         ,l.ad_fees_incurred
         ,l.total_incurred
+        ,l.pi_paid
+        ,l.pi_incurred
     FROM v_ice_claims_latest_position l
     INNER JOIN  (SELECT claim_number
                 FROM ice_dim_claim
@@ -113,6 +115,18 @@ view: nonfault_ad_claims {
     type: sum
     value_format_name: gbp
     sql:  ${TABLE}.ad_incurred;;
+  }
+
+  measure: pi_incurred {
+    type: sum
+    value_format_name: gbp
+    sql:  ${TABLE}.pi_incurred;;
+  }
+
+  measure: pi_paid {
+    type: sum
+    value_format_name: gbp
+    sql:  ${TABLE}.pi_paid;;
   }
 
  }
