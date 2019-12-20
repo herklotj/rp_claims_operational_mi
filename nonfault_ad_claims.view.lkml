@@ -4,7 +4,7 @@ view: nonfault_ad_claims {
     SELECT
         l.claimnum
         ,l.polnum
-        ,l.incidentdate
+        ,l.incident_date
         ,l.notificationdate
         ,s.status_code
         ,l.ad_paid
@@ -80,9 +80,9 @@ view: nonfault_ad_claims {
     description: "Accident Month"
     allow_fill: no
     type: date
-    sql:date_trunc('month',case when year(${TABLE}.incidentdate) = year(sysdate) and month(sysdate) - month(${TABLE}.incidentdate) <6 then ${TABLE}.incidentdate
-             when year(sysdate) - year(${TABLE}.incidentdate) = 1 and month(sysdate) +12 - month(${TABLE}.incidentdate) <6 then ${TABLE}.incidentdate
-             else date_trunc('year',${TABLE}.incidentdate) end) ;;
+    sql:date_trunc('month',case when year(${TABLE}.incident_date) = year(sysdate) and month(sysdate) - month(${TABLE}.incident_date) <6 then ${TABLE}.incident_date
+             when year(sysdate) - year(${TABLE}.incident_date) = 1 and month(sysdate) +12 - month(${TABLE}.incident_date) <6 then ${TABLE}.incident_date
+             else date_trunc('year',${TABLE}.incident_date) end) ;;
   }
 
   measure: number {
