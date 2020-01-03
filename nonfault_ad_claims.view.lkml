@@ -90,7 +90,7 @@ view: nonfault_ad_claims {
   }
 
   dimension: ad_recovery_reserve {
-    description: "AD Recovery Reserve"
+    label: "AD Recovery Reserve"
     type: number
     value_format_name: gbp
     sql: ${TABLE}.ad_recovery_reserve ;;
