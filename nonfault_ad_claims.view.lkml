@@ -14,6 +14,7 @@ view: nonfault_ad_claims {
         ,l.total_incurred
         ,l.pi_paid
         ,l.pi_incurred
+        ,round(l.ad_incurred_exc_rec - l.ad_incurred,2) -  round(l.ad_paid_exc_rec - l.ad_paid,2) as ad_recovery_reserve
     FROM v_ice_claims_latest_position l
     INNER JOIN  (SELECT claim_number
                 FROM ice_dim_claim
@@ -86,6 +87,13 @@ view: nonfault_ad_claims {
     type: number
     value_format_name: gbp
     sql: ${TABLE}.total_incurred ;;
+  }
+
+  dimension: ad_recovery_reserve {
+    description: "AD Recovery Reserve"
+    type: number
+    value_format_name: gbp
+    sql: ${TABLE}.ad_recovery_reserve ;;
   }
 
   dimension: accident_month {
