@@ -1,8 +1,8 @@
 view: updated_asat {
   derived_table: {
     sql:
-    SELECT first 1
-    loaddttm
+    SELECT
+    max(loaddttm)
 
     FROM ice_dim_claim
 
