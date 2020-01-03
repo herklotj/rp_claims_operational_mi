@@ -2,7 +2,7 @@ view: updated_asat {
   derived_table: {
     sql:
     SELECT
-    max(loaddttm)
+    loaddttm
 
     FROM ice_dim_claim
 
@@ -11,7 +11,7 @@ view: updated_asat {
 
   measure: loaddttm {
     type: date_time
-    sql: ${TABLE}.loaddttm;;
+    sql: max(${TABLE}.loaddttm);;
   }
 
 }
