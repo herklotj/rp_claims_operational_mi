@@ -39,7 +39,7 @@ view: nonfault_ad_claims {
 
   dimension: ad_paid {
     label: "AD Paid"
-    description: "AD Paid including fees"
+    description: "AD Paid Including Fees"
     type: number
     value_format_name: gbp
     sql: ${TABLE}.ad_paid ;;
@@ -47,15 +47,21 @@ view: nonfault_ad_claims {
 
   dimension: ad_fees_paid {
     label: "AD Fees Paid"
-    description: "AD Paid Fees"
     type: number
     value_format_name: gbp
     sql: ${TABLE}.ad_fees_paid ;;
   }
 
+  dimension: ad_paid_exc_fees {
+    label: "AD Paid Excluding Fees"
+    type: number
+    value_format_name: gbp
+    sql: ${TABLE}.ad_paid - ${TABLE}.ad_fees_paid ;;
+  }
+
   dimension: ad_incurred {
     label: "AD Incurred"
-    description: "AD Incurred including fees"
+    description: "AD Incurred Including Fees"
     type: number
     value_format_name: gbp
     sql: ${TABLE}.ad_incurred ;;
@@ -63,14 +69,20 @@ view: nonfault_ad_claims {
 
   dimension: ad_fees_incurred {
     label: "AD Fees Incurred"
-    description: "AD Incurred Fees"
     type: number
     value_format_name: gbp
     sql: ${TABLE}.ad_fees_incurred ;;
   }
 
+  dimension: ad_incurred_exc_fees {
+    label: "AD Incurred Excluding Fees"
+    type: number
+    value_format_name: gbp
+    sql: ${TABLE}.ad_incurred - ${TABLE}.ad_fees_incurred ;;
+  }
+
   dimension: total_incurred {
-    description: "Total Incurred Fees"
+    description: "Total Incurred"
     type: number
     value_format_name: gbp
     sql: ${TABLE}.total_incurred ;;
@@ -115,6 +127,12 @@ view: nonfault_ad_claims {
     type: sum
     value_format_name: gbp
     sql:  ${TABLE}.ad_incurred;;
+  }
+
+  measure: incurred_exc_fees {
+    type: sum
+    value_format_name: gbp
+    sql:  ${TABLE}.ad_incurred -${TABLE}.ad_fees_incurred;;
   }
 
   measure: pi_incurred {
