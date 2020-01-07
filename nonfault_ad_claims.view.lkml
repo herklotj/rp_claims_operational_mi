@@ -4,7 +4,7 @@ view: nonfault_ad_claims {
     SELECT
         l.claimnum
         ,l.polnum
-        ,l.incidentdate
+        ,l.incident_date
         ,l.notificationdate
         ,s.status_code
         ,l.ad_paid
@@ -14,6 +14,7 @@ view: nonfault_ad_claims {
         ,l.total_incurred
         ,l.pi_paid
         ,l.pi_incurred
+        ,round(l.ad_incurred_exc_rec - l.ad_incurred,2) -  round(l.ad_paid_exc_rec - l.ad_paid,2) as ad_recovery_reserve
     FROM v_ice_claims_latest_position l
     INNER JOIN  (SELECT claim_number
                 FROM ice_dim_claim
@@ -39,7 +40,7 @@ view: nonfault_ad_claims {
 
   dimension: ad_paid {
     label: "AD Paid"
-    description: "AD Paid including fees"
+    description: "AD Paid Including Fees"
     type: number
     value_format_name: gbp
     sql: ${TABLE}.ad_paid ;;
@@ -47,15 +48,21 @@ view: nonfault_ad_claims {
 
   dimension: ad_fees_paid {
     label: "AD Fees Paid"
-    description: "AD Paid Fees"
     type: number
     value_format_name: gbp
     sql: ${TABLE}.ad_fees_paid ;;
   }
 
+  dimension: ad_paid_exc_fees {
+    label: "AD Paid Excluding Fees"
+    type: number
+    value_format_name: gbp
+    sql: ${TABLE}.ad_paid - ${TABLE}.ad_fees_paid ;;
+  }
+
   dimension: ad_incurred {
     label: "AD Incurred"
-    description: "AD Incurred including fees"
+    description: "AD Incurred Including Fees"
     type: number
     value_format_name: gbp
     sql: ${TABLE}.ad_incurred ;;
@@ -63,26 +70,39 @@ view: nonfault_ad_claims {
 
   dimension: ad_fees_incurred {
     label: "AD Fees Incurred"
-    description: "AD Incurred Fees"
     type: number
     value_format_name: gbp
     sql: ${TABLE}.ad_fees_incurred ;;
   }
 
+  dimension: ad_incurred_exc_fees {
+    label: "AD Incurred Excluding Fees"
+    type: number
+    value_format_name: gbp
+    sql: ${TABLE}.ad_incurred - ${TABLE}.ad_fees_incurred ;;
+  }
+
   dimension: total_incurred {
-    description: "Total Incurred Fees"
+    description: "Total Incurred"
     type: number
     value_format_name: gbp
     sql: ${TABLE}.total_incurred ;;
+  }
+
+  dimension: ad_recovery_reserve {
+    label: "AD Recovery Reserve"
+    type: number
+    value_format_name: gbp
+    sql: ${TABLE}.ad_recovery_reserve ;;
   }
 
   dimension: accident_month {
     description: "Accident Month"
     allow_fill: no
     type: date
-    sql:date_trunc('month',case when year(${TABLE}.incidentdate) = year(sysdate) and month(sysdate) - month(${TABLE}.incidentdate) <6 then ${TABLE}.incidentdate
-             when year(sysdate) - year(${TABLE}.incidentdate) = 1 and month(sysdate) +12 - month(${TABLE}.incidentdate) <6 then ${TABLE}.incidentdate
-             else date_trunc('year',${TABLE}.incidentdate) end) ;;
+    sql:date_trunc('month',case when year(${TABLE}.incident_date) = year(sysdate) and month(sysdate) - month(${TABLE}.incident_date) <6 then ${TABLE}.incident_date
+             when year(sysdate) - year(${TABLE}.incident_date) = 1 and month(sysdate) +12 - month(${TABLE}.incident_date) <6 then ${TABLE}.incident_date
+             else date_trunc('year',${TABLE}.incident_date) end) ;;
   }
 
   measure: number {
@@ -115,6 +135,12 @@ view: nonfault_ad_claims {
     type: sum
     value_format_name: gbp
     sql:  ${TABLE}.ad_incurred;;
+  }
+
+  measure: incurred_exc_fees {
+    type: sum
+    value_format_name: gbp
+    sql:  ${TABLE}.ad_incurred -${TABLE}.ad_fees_incurred;;
   }
 
   measure: pi_incurred {
