@@ -7,7 +7,7 @@ view: fnol_ice {
         (
         SELECT
               wk.start_date as notification_week
-              ,notification_date - day(notification_date)+1 as notification_week
+              ,notificationdate - day(notificationdate)+1 as notification_month
                ,case when ws_incurred > 0 then 0.00 else 1.00 end as reported_clm
                ,case when (total_incurred - ws_incurred) > 0.00 then 1.00 else 0.00 end as non_nil_clm
                ,case when (total_incurred - ws_incurred) > 0.00 then 1.00 else 0.00 end as non_nil_clm
@@ -49,6 +49,12 @@ view: fnol_ice {
       dimension: notification_week  {
         type: date_week
         sql:notification_week ;;
+
+      }
+
+      dimension: notification_month  {
+        type: date_month
+        sql:notification_month ;;
 
       }
 
