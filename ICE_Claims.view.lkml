@@ -43,7 +43,7 @@ view: ice_claims {
                       SUM(CASE WHEN notificationdate <= wk.end_date and ad_incurred > 0 THEN 1 else 0 END) AS ad_count_inwk,
                       SUM(CASE WHEN notificationdate <= wk.end_date and (total_incurred) > 0 THEN 1 else 0 END) AS total_count_inwk,
                       SUM(CASE WHEN notificationdate <= wk.end_date and (total_incurred - ws_incurred) > 0 THEN 1 else 0 END) AS total_count_exc_ws_inwk,
-                      SUM(CASE WHEN notificationdate <= wk.end_date and (total_incurred_exc_rec) > 0 THEN 1 else 0 END) AS total_reported_exc_ws_inwk
+                      SUM(CASE WHEN notificationdate <= wk.end_date and (total_incurred_exc_rec- ws_incurred) > 0 THEN 1 else 0 END) AS total_reported_exc_ws_inwk
     from
       (
         select
