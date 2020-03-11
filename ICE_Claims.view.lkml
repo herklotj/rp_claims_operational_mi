@@ -43,7 +43,8 @@ view: ice_claims {
                       SUM(CASE WHEN notificationdate <= wk.end_date and ad_incurred > 0 THEN 1 else 0 END) AS ad_count_inwk,
                       SUM(CASE WHEN notificationdate <= wk.end_date and (total_incurred) > 0 THEN 1 else 0 END) AS total_count_inwk,
                       SUM(CASE WHEN notificationdate <= wk.end_date and (total_incurred - ws_incurred) > 0 THEN 1 else 0 END) AS total_count_exc_ws_inwk,
-                      SUM(CASE WHEN notificationdate <= wk.end_date and (total_incurred_exc_rec- ws_incurred) > 0 THEN 1 else 0 END) AS total_reported_exc_ws_inwk
+                      SUM(CASE WHEN notificationdate <= wk.end_date and (total_incurred_exc_rec- ws_incurred) > 0 THEN 1 else 0 END) AS total_reported_exc_ws_inwk,
+                      SUM(CASE WHEN notificationdate <= wk.end_date and ws_incurred = 0 then 1 else 0 END) as total_notified_ex_ws_inwk
     from
       (
         select
@@ -58,6 +59,7 @@ view: ice_claims {
           ,sum(case when peril='OT' then total_incurred else 0 end) as OT_Incurred
           ,sum(case when peril='PI' then total_incurred else 0 end) as PI_Incurred
           ,sum(case when peril='WS' then total_incurred else 0 end) as WS_Incurred
+
         from
             ice_aa_claim_financials cf
         left join
@@ -121,5 +123,11 @@ measure: fault_clms_inwk_freq {
   sql: ${fault_clms_inwk} / nullif(${exposure},0);;
   value_format: "0.0%"
 }
+
+  measure: notified_clms_inwk_freq {
+    type: number
+    sql: sum(total_notified_ex_ws_inwk) / nullif(${exposure},0);;
+    value_format: "0.0%"
+  }
 
 }
