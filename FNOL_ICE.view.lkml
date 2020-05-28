@@ -1,49 +1,49 @@
 view: fnol_ice {
   derived_table: {
     sql:
-      select
-            *
-      from
-        (
-        SELECT
-              wk.start_date as notification_week
-              ,notificationdate - day(notificationdate)+1 as notification_month
-               ,case when ws_incurred > 0 then 0.00 else 1.00 end as reported_clm
-               ,case when (total_incurred - ws_incurred) > 0.00 then 1.00 else 0.00 end as non_nil_clm
-               ,case when (total_incurred - ws_incurred) > 0.00 then 1.00 else 0.00 end as non_nil_clm
-               ,case when (total_incurred - ws_incurred) <= 0.00 and ws_incurred = 0.00 then 1.00 else 0.00 end as nil_clm
-               ,case when (tp_incurred) > 0.00 then 1.00 else 0.00 end as tp_non_nil_clm
-               ,case when (ad_incurred) > 0.00 then 1.00 else 0.00 end as ad_non_nil_clm
-               ,case when (pi_incurred) > 0.00 then 1.00 else 0.00 end as pi_non_nil_clm
-               ,case when (ad_incurred) > 0.00 and (tp_incurred) > 0.00 then 1.00 else 0.00 end as ad_tp_non_nil
-               ,case when (ad_incurred) > 0.00 and (tp_incurred) = 0.00 then 1.00 else 0.00 end as ad_non_nil_tp_nil
-               ,case when (ad_incurred) = 0.00 and (tp_incurred) > 0.00 then 1.00 else 0.00 end as tp_non_nil_ad_nil
-               ,*
-
-        FROM
-            (
-            select
-                claimnum
-                ,min(notificationdate) as notificationdate
-                ,sum(total_incurred) as total_incurred
-                ,sum(total_incurred_exc_rec) as total_incurred_exc_rec
-                ,sum(case when peril='AD' then total_incurred else 0 end) as AD_Incurred
-                ,sum(case when peril='TP' then total_incurred else 0 end) as TP_Incurred
-                ,sum(case when peril='OT' then total_incurred else 0 end) as OT_Incurred
-                ,sum(case when peril='PI' then total_incurred else 0 end) as PI_Incurred
-                ,sum(case when peril='WS' then total_incurred else 0 end) as WS_Incurred
-            from
-                  ice_aa_claim_financials
-            where to_date(notificationdate) = transaction_date  and versionenddate > transaction_date
-            group by claimnum
-            ) clm
-        left join
-            aauser.calendar_week wk
-            ON clm.notificationdate >= wk.start_date
-            AND clm.notificationdate <= wk.end_date
-        where notificationdate >= '2017-01-01'
-        )a
-
+SELECT wk.start_date AS notification_week,
+       b.notificationdate -DAY(b.notificationdate) +1 AS notification_month,
+       CASE WHEN ws_incurred > 0 or incident_type_code = 'W' THEN 0.00 ELSE 1.00 END AS reported_clm,
+       CASE WHEN (total_incurred - ws_incurred) > 0.00 THEN 1.00 ELSE 0.00 END AS non_nil_clm,
+       CASE WHEN (total_incurred - ws_incurred) <= 0.00 AND ws_incurred = 0.00 THEN 1.00 ELSE 0.00 END AS nil_clm,
+       CASE WHEN (tp_incurred) > 0.00 THEN 1.00 ELSE 0.00 END AS tp_non_nil_clm,
+       CASE WHEN (ad_incurred) > 0.00 THEN 1.00 ELSE 0.00 END AS ad_non_nil_clm,
+       CASE WHEN (pi_incurred) > 0.00 THEN 1.00 ELSE 0.00 END AS pi_non_nil_clm,
+       CASE WHEN (ad_incurred) > 0.00 AND (tp_incurred) > 0.00 THEN 1.00 ELSE 0.00 END AS ad_tp_non_nil,
+       CASE WHEN (ad_incurred) > 0.00 AND (tp_incurred) = 0.00 THEN 1.00 ELSE 0.00 END AS ad_non_nil_tp_nil,
+       CASE WHEN (ad_incurred) = 0.00 AND (tp_incurred) > 0.00 THEN 1.00 ELSE 0.00 END AS tp_non_nil_ad_nil,
+       b.claimnum,
+       b.notificationdate,
+       COALESCE(total_incurred,0) AS total_incurred,
+       COALESCE(total_incurred_exc_rec,0) AS total_incurred_exc_rec,
+       COALESCE(ad_incurred,0) AS ad_incurred,
+       COALESCE(tp_incurred,0) AS tp_incurred,
+       COALESCE(ot_incurred,0) AS ot_incurred,
+       COALESCE(pi_incurred,0) AS pi_incurred,
+       COALESCE(ws_incurred,0) AS ws_incurred,
+       incident_type_code
+FROM (SELECT claim_number AS claimnum,
+             to_date(notification_date) AS notificationdate,
+             incident_type_code
+      FROM ice_mv_claim_acc_snapshot
+      WHERE claim_position_code != 'ERROR') b
+  LEFT JOIN (SELECT claimnum,
+                    MIN(to_date (notificationdate)) AS notificationdate,
+                    SUM(total_incurred) AS total_incurred,
+                    SUM(total_incurred_exc_rec) AS total_incurred_exc_rec,
+                    SUM(CASE WHEN peril = 'AD' THEN total_incurred ELSE 0 END) AS AD_Incurred,
+                    SUM(CASE WHEN peril = 'TP' THEN total_incurred ELSE 0 END) AS TP_Incurred,
+                    SUM(CASE WHEN peril = 'OT' THEN total_incurred ELSE 0 END) AS OT_Incurred,
+                    SUM(CASE WHEN peril = 'PI' THEN total_incurred ELSE 0 END) AS PI_Incurred,
+                    SUM(CASE WHEN peril = 'WS' THEN total_incurred ELSE 0 END) AS WS_Incurred
+             FROM ice_aa_claim_financials
+             WHERE to_date(notificationdate) = transaction_date
+             AND   versionenddate > transaction_date
+             GROUP BY claimnum) clm ON b.claimnum = clm.claimnum
+  LEFT JOIN aauser.calendar_week wk
+         ON b.notificationdate >= wk.start_date
+        AND b.notificationdate <= wk.end_date
+WHERE b.notificationdate >= '2017-01-01'
       ;;}
 
       dimension: notification_week  {
