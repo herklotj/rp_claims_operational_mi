@@ -41,8 +41,7 @@ FROM (SELECT polnum,
                           to_date(incident_date) AS incidentdate,
                           incident_type_code
                    FROM ice_mv_claim_acc_snapshot
-                   WHERE claim_position_code != 'ERROR'
-                   AND   claim_number = 'AAG100101') b
+                   WHERE claim_position_code != 'ERROR') b
                LEFT JOIN (SELECT claimnum,
                                  SUM(total_incurred) AS total_incurred,
                                  SUM(total_incurred_exc_rec) AS total_incurred_exc_rec,
