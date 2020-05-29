@@ -1,81 +1,67 @@
 view: ice_claims {
  derived_table: {
   sql:
-
-  select
-      to_timestamp(exp.acc_week) as acc_week
-      ,date_part('week',exp.acc_week) as acc_week_number
-      ,date_part('year',exp.acc_week) as acc_year
-      ,earned_premium
-      ,exposure
-      ,in_force
-      ,total_reported_exc_ws_inwk
-      ,clm.*
-  from
-
-     (select
-        polnum
-        ,scheme
-        ,acc_week
-        ,sum(exposure) as exposure
-        ,sum(in_force) as in_force
-        ,sum(earned_premium) as earned_premium
-      from
-        v_prem_earned_wk
-    group by polnum,scheme,acc_week
-    )exp
-
-  left join
-    (select
-                      polnum,
-                      wk.start_date as acc_week,
-                      SUM(case when tp_incurred > 0 then 1 else 0 end) AS tp_count,
-                      SUM(case when ad_incurred > 0 then 1 else 0 end) AS ad_count,
-                      SUM(case when pi_incurred > 0 then 1 else 0 end) AS pi_count,
-                      SUM(case when ot_incurred > 0 then 1 else 0 end) AS ot_count,
-                      SUM(case when ws_incurred > 0 then 1 else 0 end) AS ws_count,
-                      SUM(case when total_incurred > 0 then 1 else 0 end) AS total_count,
-                      SUM(case when (total_incurred - ws_incurred) > 0 then 1 else 0 end) AS total_count_exc_ws,
-                      SUM(CASE WHEN notificationdate <= wk.end_date and ws_incurred > 0 THEN 1 else 0 END) AS ws_count_inwk,
-                      SUM(CASE WHEN notificationdate <= wk.end_date and ot_incurred > 0 THEN 1 else 0 END) AS ot_count_inwk,
-                      SUM(CASE WHEN notificationdate <= wk.end_date and pi_incurred > 0 THEN 1 else 0 END) AS pi_count_inwk,
-                      SUM(CASE WHEN notificationdate <= wk.end_date and tp_incurred > 0 THEN 1 else 0 END) AS tp_count_inwk,
-                      SUM(CASE WHEN notificationdate <= wk.end_date and ad_incurred > 0 THEN 1 else 0 END) AS ad_count_inwk,
-                      SUM(CASE WHEN notificationdate <= wk.end_date and (total_incurred) > 0 THEN 1 else 0 END) AS total_count_inwk,
-                      SUM(CASE WHEN notificationdate <= wk.end_date and (total_incurred - ws_incurred) > 0 THEN 1 else 0 END) AS total_count_exc_ws_inwk,
-                      SUM(CASE WHEN notificationdate <= wk.end_date and (total_incurred_exc_rec- ws_incurred) > 0 THEN 1 else 0 END) AS total_reported_exc_ws_inwk,
-                      SUM(CASE WHEN notificationdate <= wk.end_date and ws_incurred = 0 then 1 else 0 END) as total_notified_ex_ws_inwk
-    from
-      (
-        select
-          claimnum
-          ,policy_number as polnum
-          ,min(incidentdate) as incidentdate
-          ,min(notificationdate) as notificationdate
-          ,sum(total_incurred) as total_incurred
-          ,sum(total_incurred_exc_rec) as total_incurred_exc_rec
-          ,sum(case when peril='AD' then total_incurred else 0 end) as AD_Incurred
-          ,sum(case when peril='TP' then total_incurred else 0 end) as TP_Incurred
-          ,sum(case when peril='OT' then total_incurred else 0 end) as OT_Incurred
-          ,sum(case when peril='PI' then total_incurred else 0 end) as PI_Incurred
-          ,sum(case when peril='WS' then total_incurred else 0 end) as WS_Incurred
-
-        from
-            ice_aa_claim_financials cf
-        left join
-            ice_aa_pol2clm p2c
-            on cf.claimnum = p2c.claim_number
-        where versionenddate='2999-12-31'
-        group by claimnum,policy_number
-      ) c
-    left join
-      aauser.calendar_week wk
-      ON c.incidentdate >= wk.start_date
-      AND c.incidentdate <= wk.end_date
-    group by  c.polnum,wk.start_date
-    )clm
-    on exp.polnum = clm.polnum and clm.acc_week = exp.acc_week
-  WHERE exp.acc_week <= to_date(sysdate)
+ SELECT to_timestamp(exp.acc_week) AS acc_week,
+       date_part('week',exp.acc_week) AS acc_week_number,
+       date_part('year',exp.acc_week) AS acc_year,
+       earned_premium,
+       exposure,
+       in_force,
+       clm.*
+FROM (SELECT polnum,
+             scheme,
+             acc_week,
+             SUM(exposure) AS exposure,
+             SUM(inforce) AS in_force,
+             SUM(earned_premium) AS earned_premium
+      FROM v_ice_prem_earned_wk
+      GROUP BY polnum,
+               scheme,
+               acc_week) EXP
+  LEFT JOIN (SELECT b.polnum,
+                    wk.start_date AS acc_week,
+                    SUM(CASE WHEN tp_incurred > 0 THEN 1 ELSE 0 END) AS tp_count,
+                    SUM(CASE WHEN ad_incurred > 0 THEN 1 ELSE 0 END) AS ad_count,
+                    SUM(CASE WHEN pi_incurred > 0 THEN 1 ELSE 0 END) AS pi_count,
+                    SUM(CASE WHEN ot_incurred > 0 THEN 1 ELSE 0 END) AS ot_count,
+                    SUM(CASE WHEN ws_incurred > 0 THEN 1 ELSE 0 END) AS ws_count,
+                    SUM(CASE WHEN total_incurred > 0 THEN 1 ELSE 0 END) AS total_count,
+                    SUM(CASE WHEN (total_incurred - ws_incurred) > 0 THEN 1 ELSE 0 END) AS total_count_exc_ws,
+                    SUM(CASE WHEN notificationdate <= wk.end_date AND ws_incurred > 0 THEN 1 ELSE 0 END) AS ws_count_inwk,
+                    SUM(CASE WHEN notificationdate <= wk.end_date AND ot_incurred > 0 THEN 1 ELSE 0 END) AS ot_count_inwk,
+                    SUM(CASE WHEN notificationdate <= wk.end_date AND pi_incurred > 0 THEN 1 ELSE 0 END) AS pi_count_inwk,
+                    SUM(CASE WHEN notificationdate <= wk.end_date AND tp_incurred > 0 THEN 1 ELSE 0 END) AS tp_count_inwk,
+                    SUM(CASE WHEN notificationdate <= wk.end_date AND ad_incurred > 0 THEN 1 ELSE 0 END) AS ad_count_inwk,
+                    SUM(CASE WHEN notificationdate <= wk.end_date AND (total_incurred) > 0 THEN 1 ELSE 0 END) AS total_count_inwk,
+                    SUM(CASE WHEN notificationdate <= wk.end_date AND (total_incurred - ws_incurred) > 0 THEN 1 ELSE 0 END) AS total_count_exc_ws_inwk,
+                    SUM(CASE WHEN notificationdate <= wk.end_date AND incident_type_code != 'W' THEN 1 ELSE 0 END) AS total_reported_exc_ws_inwk
+             FROM (SELECT claim_number AS claimnum,
+                          policy_number AS polnum,
+                          to_date(notification_date) AS notificationdate,
+                          to_date(incident_date) AS incidentdate,
+                          incident_type_code
+                   FROM ice_mv_claim_acc_snapshot
+                   WHERE claim_position_code != 'ERROR'
+                   AND   claim_number = 'AAG100101') b
+               LEFT JOIN (SELECT claimnum,
+                                 SUM(total_incurred) AS total_incurred,
+                                 SUM(total_incurred_exc_rec) AS total_incurred_exc_rec,
+                                 SUM(CASE WHEN peril = 'AD' THEN total_incurred ELSE 0 END) AS AD_Incurred,
+                                 SUM(CASE WHEN peril = 'TP' THEN total_incurred ELSE 0 END) AS TP_Incurred,
+                                 SUM(CASE WHEN peril = 'OT' THEN total_incurred ELSE 0 END) AS OT_Incurred,
+                                 SUM(CASE WHEN peril = 'PI' THEN total_incurred ELSE 0 END) AS PI_Incurred,
+                                 SUM(CASE WHEN peril = 'WS' THEN total_incurred ELSE 0 END) AS WS_Incurred
+                          FROM ice_aa_claim_financials
+                          WHERE versionenddate = '2999-12-31'
+                          GROUP BY claimnum) c ON b.claimnum = c.claimnum
+               LEFT JOIN aauser.calendar_week wk
+                      ON b.incidentdate >= wk.start_date
+                     AND b.incidentdate <= wk.end_date
+             GROUP BY b.polnum,
+                      wk.start_date) clm
+         ON exp.polnum = clm.polnum
+        AND clm.acc_week = exp.acc_week
+WHERE exp.acc_week <= to_date(sysdate)
    ;;
 }
 
@@ -124,10 +110,5 @@ measure: fault_clms_inwk_freq {
   value_format: "0.0%"
 }
 
-  measure: notified_clms_inwk_freq {
-    type: number
-    sql: sum(total_notified_ex_ws_inwk) / nullif(${exposure},0);;
-    value_format: "0.0%"
-  }
 
 }
