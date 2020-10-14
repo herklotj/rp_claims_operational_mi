@@ -7,7 +7,8 @@ view: ice_claims {
        earned_premium,
        exposure,
        in_force,
-       clm.*
+       clm.*,
+       smart.*
 FROM (SELECT polnum,
              scheme,
              acc_week,
@@ -60,6 +61,52 @@ FROM (SELECT polnum,
                       wk.start_date) clm
          ON exp.polnum = clm.polnum
         AND clm.acc_week = exp.acc_week
+
+  LEFT JOIN
+      (select
+          week
+          ,Partial_Week_Flag
+          ,sum(device_days) as device_exposure_days
+          ,sum(journeys) as journeys
+          ,sum(gps_distance) as gps_distance
+       from
+          (
+          select
+              exposure.*
+              ,case when journeys.week_end > to_date(sysdate) then 'Partial Week' else 'Full Week' end as Partial_Week_Flag
+              ,case when exposure.week_end < to_date(sysdate) then (exposure.week_end - exposure.week+1)*device_Live
+                    else (to_date(sysdate) - exposure.week)*device_Live
+                    end as device_days
+              ,journeys.journeys
+              ,journeys.gps_distance
+            from
+              v_smart_b_live_weekly exposure
+            left join
+                (select
+                    uid
+                    ,cal.start_date as week
+                    ,cal.end_date as week_end
+                    ,count(*) as journeys
+                    ,sum(gps_distance) as gps_distance
+                    ,sum(can_distance) as can_distance
+                    ,sum(harsh_acc_count) as harsh_acc_count
+                    ,sum(harsh_dec_count) as harsh_dec_count
+                    ,sum(overspeed_count) as overspeed_count
+
+                 from
+                    si_journey_summary j
+                 left join
+                       aauser.calendar_week cal
+                      on cal.start_date <= j.start_time and cal.end_date >= j.start_time
+                 group by uid, cal.start_date,cal.end_date
+                  )journeys
+                on exposure.uid=journeys.uid and journeys.week = exposure.week
+               )s
+               group by s.week,Partial_Week_Flag
+    )smart
+    on smart.week =exp.acc_week and smart.Partial_Week_Flag ='Full Week'
+
+
 WHERE exp.acc_week <= to_date(sysdate)
    ;;
 }
@@ -103,11 +150,42 @@ measure: reported_clms_inwk_freq {
   sql: ${reported_clms_inwk} / nullif(${exposure},0);;
   value_format: "0.0%"
 }
+
+  measure: reported_clms_inwk_freq_index {
+    type: number
+    sql: (${reported_clms_inwk} / nullif(${exposure},0))/0.041;;
+    value_format_name: decimal_2
+  }
+
 measure: fault_clms_inwk_freq {
   type: number
   sql: ${fault_clms_inwk} / nullif(${exposure},0);;
   value_format: "0.0%"
 }
+
+measure: smart_journeys_per_day {
+  type: number
+  sql:sum(journeys*1.000) / sum(device_exposure_days*1.000);;
+  value_format_name: decimal_1
+}
+
+  measure: smart_journeys_per_day_index {
+    type: number
+    sql:(sum(journeys*1.000) / sum(device_exposure_days*1.000))/2.774;;
+    value_format_name: decimal_2
+  }
+
+  measure: smart_distance_per_day {
+    type: number
+    sql:sum(gps_distance*1.000/1000) / sum(device_exposure_days*1.000);;
+    value_format_name: decimal_1
+  }
+
+  measure: smart_distance_per_day_index {
+    type: number
+    sql:(sum(gps_distance*1.000/1000) / sum(device_exposure_days*1.000)) /26.5;;
+    value_format_name: decimal_2
+  }
 
 
 }
