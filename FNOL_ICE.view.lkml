@@ -38,7 +38,7 @@ FROM (SELECT claim_number AS claimnum,
                     SUM(CASE WHEN peril = 'WS' THEN total_incurred ELSE 0 END) AS WS_Incurred
              FROM ice_aa_claim_financials
              WHERE to_date(notificationdate) = transaction_date
-             AND   versionenddate > transaction_date
+             AND   versionenddate >= transaction_date
              GROUP BY claimnum) clm ON b.claimnum = clm.claimnum
   LEFT JOIN aauser.calendar_week wk
          ON b.notificationdate >= wk.start_date
