@@ -3,6 +3,7 @@ view: ice_claims {
     sql:
      SELECT to_timestamp(exp.acc_week) AS acc_week,
            date_part('week',exp.acc_week) AS acc_week_number,
+          date_part('month',exp.acc_week) AS acc_month_number,
            date_part('year',exp.acc_week) AS acc_year,
            earned_premium,
            exposure,
@@ -131,6 +132,11 @@ view: ice_claims {
   dimension: accident_week_number {
     type: number
     sql: ${TABLE}.acc_week_number ;;
+  }
+
+  dimension: accident_month_number {
+    type: number
+    sql: ${TABLE}.acc_month_number ;;
   }
 
   dimension: accident_year {
