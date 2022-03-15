@@ -12,6 +12,8 @@ SELECT wk.start_date AS notification_week,
        CASE WHEN (ad_incurred) > 0.00 AND (tp_incurred) > 0.00 THEN 1.00 ELSE 0.00 END AS ad_tp_non_nil,
        CASE WHEN (ad_incurred) > 0.00 AND (tp_incurred) = 0.00 THEN 1.00 ELSE 0.00 END AS ad_non_nil_tp_nil,
        CASE WHEN (ad_incurred) = 0.00 AND (tp_incurred) > 0.00 THEN 1.00 ELSE 0.00 END AS tp_non_nil_ad_nil,
+       policy_number,
+       CASE WHEN substr (policy_number,6,1) = 1 THEN '103' WHEN substr (policy_number,6,1) = 2 THEN '173' ELSE '102' END AS scheme,
        b.claimnum,
        b.notificationdate,
        COALESCE(total_incurred,0) AS total_incurred,
@@ -23,6 +25,7 @@ SELECT wk.start_date AS notification_week,
        COALESCE(ws_incurred,0) AS ws_incurred,
        incident_type_code
 FROM (SELECT claim_number AS claimnum,
+             policy_number,
              to_date(notification_date) AS notificationdate,
              incident_type_code
       FROM ice_mv_claim_acc_snapshot
@@ -57,6 +60,12 @@ WHERE b.notificationdate >= '2017-01-01'
         sql:notification_month ;;
 
       }
+
+  dimension: scheme_number  {
+    type: string
+    sql:scheme ;;
+
+  }
 
       measure: reported_claims {
         type: sum
