@@ -154,6 +154,26 @@ view: ice_claims {
     sql: total_reported_exc_ws_inwk;;
   }
 
+  measure: reported_ot_inwk {
+    type: sum
+    sql: ot_count_inwk;;
+  }
+
+  measure: reported_pi_inwk {
+    type: sum
+    sql: pi_count_inwk;;
+  }
+
+  measure: reported_tp_inwk {
+    type: sum
+    sql: tp_count_inwk;;
+  }
+
+  measure: reported_ad_inwk {
+    type: sum
+    sql: ad_count_inwk;;
+  }
+
   measure: fault_clms_inwk {
     type: sum
     sql: total_count_exc_ws_inwk;;
@@ -162,6 +182,30 @@ view: ice_claims {
   measure: reported_clms_inwk_freq {
     type: number
     sql: ${reported_clms_inwk} / nullif(${exposure},0);;
+    value_format: "0.0%"
+  }
+
+  measure: reported_ot_inwk_freq {
+    type: number
+    sql: ${reported_ot_inwk} / nullif(${exposure},0);;
+    value_format: "0.0%"
+  }
+
+  measure: reported_pi_inwk_freq {
+    type: number
+    sql: ${reported_pi_inwk} / nullif(${exposure},0);;
+    value_format: "0.0%"
+  }
+
+  measure: reported_tp_inwk_freq {
+    type: number
+    sql: ${reported_tp_inwk} / nullif(${exposure},0);;
+    value_format: "0.0%"
+  }
+
+  measure: reported_ad_inwk_freq {
+    type: number
+    sql: ${reported_ad_inwk} / nullif(${exposure},0);;
     value_format: "0.0%"
   }
 
