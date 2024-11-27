@@ -1,15 +1,14 @@
 view: ice_claims {
   derived_table: {
     sql:
-     SELECT to_timestamp(exp.acc_week) AS acc_week,
+    SELECT to_timestamp(exp.acc_week) AS acc_week,
            date_part('week',exp.acc_week) AS acc_week_number,
           date_part('month',exp.acc_week) AS acc_month_number,
            date_part('year',exp.acc_week) AS acc_year,
            earned_premium,
            exposure,
            in_force,
-           clm.*,
-           smart.*
+           clm.*
     FROM (SELECT polnum,
                  scheme,
                  acc_week,
@@ -42,7 +41,7 @@ view: ice_claims {
                               to_date(notification_date) AS notificationdate,
                               to_date(incident_date) AS incidentdate,
                               incident_type_code
-                       FROM ice_mv_claim_acc_snapshot
+                       FROM dbuser.ice_mv_claim_acc_snapshot
                        WHERE claim_position_code != 'ERROR') b
                    LEFT JOIN (SELECT claimnum,
                                      SUM(total_incurred) AS total_incurred,
@@ -52,7 +51,7 @@ view: ice_claims {
                                      SUM(CASE WHEN peril = 'OT' THEN total_incurred ELSE 0 END) AS OT_Incurred,
                                      SUM(CASE WHEN peril = 'PI' THEN total_incurred ELSE 0 END) AS PI_Incurred,
                                      SUM(CASE WHEN peril = 'WS' THEN total_incurred ELSE 0 END) AS WS_Incurred
-                              FROM ice_aa_claim_financials
+                              FROM dbuser.ice_aa_claim_financials
                               WHERE versionenddate = '2999-12-31'
                               GROUP BY claimnum) c ON b.claimnum = c.claimnum
                    LEFT JOIN aauser.calendar_week wk
@@ -63,49 +62,7 @@ view: ice_claims {
              ON exp.polnum = clm.polnum
             AND clm.acc_week = exp.acc_week
 
-      LEFT JOIN
-          (select
-              week
-              ,Partial_Week_Flag
-              ,sum(device_days) as device_exposure_days
-              ,sum(journeys) as journeys
-              ,sum(gps_distance) as gps_distance
-           from
-              (
-              select
-                  exposure.*
-                  ,case when journeys.week_end > to_date(sysdate) then 'Partial Week' else 'Full Week' end as Partial_Week_Flag
-                  ,case when exposure.week_end < to_date(sysdate) then (exposure.week_end - exposure.week+1)*device_Live
-                        else (to_date(sysdate) - exposure.week)*device_Live
-                        end as device_days
-                  ,journeys.journeys
-                  ,journeys.gps_distance
-                from
-                  v_smart_b_live_weekly exposure
-                left join
-                    (select
-                        uid
-                        ,cal.start_date as week
-                        ,cal.end_date as week_end
-                        ,count(*) as journeys
-                        ,sum(gps_distance) as gps_distance
-                        ,sum(can_distance) as can_distance
-                        ,sum(harsh_acc_count) as harsh_acc_count
-                        ,sum(harsh_dec_count) as harsh_dec_count
-                        ,sum(overspeed_count) as overspeed_count
 
-                     from
-                        si_journey_summary j
-                     left join
-                           aauser.calendar_week cal
-                          on cal.start_date <= j.start_time and cal.end_date >= j.start_time
-                     group by uid, cal.start_date,cal.end_date
-                      )journeys
-                    on exposure.uid=journeys.uid and journeys.week = exposure.week
-                   )s
-                   group by s.week,Partial_Week_Flag
-        )smart
-        on smart.week =exp.acc_week and smart.Partial_Week_Flag ='Full Week'
 
 
     WHERE exp.acc_week <= to_date(sysdate)

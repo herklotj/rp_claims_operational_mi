@@ -1,4 +1,4 @@
-connection: "echo_actian"
+connection: "av2"
 
 # include all the views
 include: "*.view"

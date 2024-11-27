@@ -17,7 +17,7 @@ view: nonfault_ad_claims {
         ,round(l.ad_incurred_exc_rec - l.ad_incurred,2) -  round(l.ad_paid_exc_rec - l.ad_paid,2) as ad_recovery_reserve
     FROM v_ice_claims_latest_position l
     INNER JOIN  (SELECT claim_number
-                FROM ice_dim_claim
+                FROM dbuser.ice_dim_claim
                 WHERE current_flag = 'Y'
                 AND   incident_type_description != 'Windscreen/Glass'
                 AND   closed_reason_description != 'Error'

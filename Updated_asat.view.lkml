@@ -4,7 +4,7 @@ view: updated_asat {
     SELECT
     loaddttm
 
-    FROM ice_dim_claim
+    FROM dbuser.ice_dim_claim
 
        ;;
   }

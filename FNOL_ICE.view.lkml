@@ -28,7 +28,7 @@ FROM (SELECT claim_number AS claimnum,
              policy_number,
              to_date(notification_date) AS notificationdate,
              incident_type_code
-      FROM ice_mv_claim_acc_snapshot
+      FROM dbuser.ice_mv_claim_acc_snapshot
       WHERE claim_position_code != 'ERROR') b
   LEFT JOIN (SELECT claimnum,
                     MIN(to_date (notificationdate)) AS notificationdate,
@@ -39,7 +39,7 @@ FROM (SELECT claim_number AS claimnum,
                     SUM(CASE WHEN peril = 'OT' THEN total_incurred ELSE 0 END) AS OT_Incurred,
                     SUM(CASE WHEN peril = 'PI' THEN total_incurred ELSE 0 END) AS PI_Incurred,
                     SUM(CASE WHEN peril = 'WS' THEN total_incurred ELSE 0 END) AS WS_Incurred
-             FROM ice_aa_claim_financials
+             FROM dbuser.ice_aa_claim_financials
              WHERE to_date(notificationdate) = transaction_date
              AND   versionenddate >= transaction_date
              GROUP BY claimnum) clm ON b.claimnum = clm.claimnum
